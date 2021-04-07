@@ -37,18 +37,56 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-  @Mutation(() => User)
+  @Mutation(() => UserResponse)
   async register(
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em }: MyContext
-  ) {
+  ): Promise<UserResponse> {
+
+    if (options.username.length <= 2) {
+      return {
+        errors: [
+          {
+            field: 'username',
+            message: 'length must be greater than 2',
+          },
+        ],
+      };
+    }
+
+    if (options.password.length <= 5) {
+      return {
+        errors: [
+          {
+            field: 'password',
+            message: 'length must be greater than 2',
+          },
+        ],
+      };
+    }
+
     const hashedPassword = await argon2.hash(options.password);
     const user = em.create(User, {
       username: options.username,
       password: hashedPassword,
     });
-    await em.persistAndFlush(user);
-    return user;
+
+    try {
+      await em.persistAndFlush(user);
+    } catch (err) {
+
+      if (err.code === '23505') { // duplicate username error
+        return {
+          errors: [
+            {
+              field: 'username',
+              message: 'username already exists',
+            },
+          ],
+        };
+      }
+    }
+    return { user };
   }
 
   @Mutation(() => UserResponse)
@@ -56,6 +94,7 @@ export class UserResolver {
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em }: MyContext
   ): Promise<UserResponse> {
+
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
       return {
@@ -67,6 +106,7 @@ export class UserResolver {
         ],
       };
     }
+
     const valid = await argon2.verify(user.password, options.password);
     if (!valid) {
       return {
@@ -79,8 +119,6 @@ export class UserResolver {
       };
     }
 
-    return {
-      user,
-    };
+    return { user };
   }
 }
