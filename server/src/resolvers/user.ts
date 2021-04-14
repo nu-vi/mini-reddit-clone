@@ -58,7 +58,7 @@ export class UserResolver {
         errors: [
           {
             field: 'username',
-            message: 'length must be greater than 2',
+            message: 'Username length must be greater than 2',
           },
         ],
       };
@@ -69,7 +69,7 @@ export class UserResolver {
         errors: [
           {
             field: 'password',
-            message: 'length must be greater than 2',
+            message: 'Password length must be greater than 5',
           },
         ],
       };
@@ -84,8 +84,8 @@ export class UserResolver {
     try {
       await em.persistAndFlush(user);
     } catch (err) {
-      if (err.code === '23505') {
-        // duplicate username error
+      // duplicate username error
+      if (err.code === '23505' || err.detail.includes("already exists")) {
         return {
           errors: [
             {
