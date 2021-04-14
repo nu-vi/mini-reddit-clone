@@ -4,10 +4,12 @@ import { Provider, createClient, dedupExchange, fetchExchange } from 'urql';
 import theme from '../theme';
 import {
   LoginMutation,
+  LogoutMutation,
   MeDocument,
   MeQuery,
   RegisterMutation,
 } from '../generated/graphql';
+import {NavBar} from "../components/NavBar";
 
 function betterUpdateQuery<Result, Query>(
   cache: Cache,
@@ -25,10 +27,17 @@ const client = createClient({
   },
   exchanges: [
     dedupExchange,
-    fetchExchange,
     cacheExchange({
       updates: {
         Mutation: {
+          logout: (_result, _args, cache) => {
+            betterUpdateQuery<LogoutMutation, MeQuery>(
+              cache,
+              { query: MeDocument },
+              _result,
+              () => ({ me: null })
+            );
+          },
           login: (_result, _args, cache) => {
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
@@ -64,6 +73,7 @@ const client = createClient({
         },
       },
     }),
+    fetchExchange,
   ],
 });
 
@@ -76,6 +86,7 @@ function MyApp({ Component, pageProps }: any) {
             useSystemColorMode: true,
           }}
         >
+          <NavBar />
           <Component {...pageProps} />
         </ColorModeProvider>
       </ChakraProvider>

@@ -11,6 +11,7 @@ import {
 } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
+import {COOKIE_NAME} from "../constants";
 
 @InputType()
 class UsernamePasswordInput {
@@ -85,7 +86,7 @@ export class UserResolver {
       await em.persistAndFlush(user);
     } catch (err) {
       // duplicate username error
-      if (err.code === '23505' || err.detail.includes("already exists")) {
+      if (err.code === '23505' || err.detail.includes('already exists')) {
         return {
           errors: [
             {
@@ -137,5 +138,22 @@ export class UserResolver {
     req.session.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+
+        if (err) {
+          console.log(err);
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }
