@@ -54,15 +54,26 @@ export class UserResolver {
     } catch (err) {
       // duplicate username error
       if (err.code === '23505' || err.detail.includes('already exists')) {
-        console.log(err);
-        return {
-          errors: [
-            {
-              field: 'username',
-              message: 'username already exists',
-            },
-          ],
-        };
+        if (err.detail.includes('username')) {
+          return {
+            errors: [
+              {
+                field: 'username',
+                message: 'username already exists',
+              },
+            ],
+          };
+        }
+        if (err.detail.includes('email')) {
+          return {
+            errors: [
+              {
+                field: 'email',
+                message: 'email already exists',
+              },
+            ],
+          };
+        }
       }
     }
 
