@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { Wrapper } from '../components/Wrapper';
 import { Form, Formik } from 'formik';
-import { toErrorMap } from '../utils/toErrorMap';
 import { InputField } from '../components/InputFieldC';
-import { Box, Button, Flex, Link } from '@chakra-ui/react';
+import { Box, Button } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { withUrqlClient } from 'next-urql';
 import { useForgotPasswordMutation } from '../generated/graphql';
-import { useRouter } from 'next/router';
 
 const forgotPassword: React.FC<{}> = ({}) => {
   const [complete, setComplete] = useState(false);
   const [, forgotPassword] = useForgotPasswordMutation();
-  const router = useRouter();
 
   return (
     <Wrapper variant="small">
