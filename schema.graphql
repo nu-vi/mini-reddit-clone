@@ -13,9 +13,11 @@ type FieldError {
 type Mutation {
     createPost(title: String!): Post!
     deletePost(id: Float!): Boolean!
-    login(options: UsernamePasswordInput!): UserResponse!
+    forgotPassword(email: String!): Boolean!
+    login(password: String!, usernameOrEmail: String!): UserResponse!
     logout: Boolean!
     register(options: UsernamePasswordInput!): UserResponse!
+    resetPassword(newPassword: String!, token: String!): UserResponse!
     updatePost(id: Float!, title: String): Post
 }
 
@@ -35,6 +37,7 @@ type Query {
 
 type User {
     createdAt: String!
+    email: String!
     id: Int!
     updatedAt: String!
     username: String!
@@ -46,6 +49,7 @@ type UserResponse {
 }
 
 input UsernamePasswordInput {
+    email: String!
     password: String!
     username: String!
 }
