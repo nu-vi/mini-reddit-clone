@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Form, Formik } from 'formik';
-import { Box, Button } from '@chakra-ui/react';
+import { Box, Button, Flex, Link } from '@chakra-ui/react';
 import { withUrqlClient } from 'next-urql';
+import NextLink from 'next/link';
 import { toErrorMap } from '../../utils/toErrorMap';
 import { InputField } from '../../components/InputFieldC';
 import { Wrapper } from '../../components/Wrapper';
 import { useResetPasswordMutation } from '../../generated/graphql';
 import { createUrqlClient } from '../../utils/createUrqlClient';
 
-const ResetPassword: NextPage<{ token: any }> = ({ token }) => {
+const ResetPassword: NextPage<{ token?: string }> = ({ token }) => {
+
   const router = useRouter();
   const [, resetPassword] = useResetPasswordMutation();
   const [tokenError, setTokenError] = useState('');
@@ -22,7 +24,7 @@ const ResetPassword: NextPage<{ token: any }> = ({ token }) => {
         onSubmit={async (values, { setErrors }) => {
           const response = await resetPassword({
             newPassword: values.newPassword,
-            token,
+            token: token || '',
           });
           if (response.data?.resetPassword.errors) {
             const errorMap = toErrorMap(response.data.resetPassword.errors);
@@ -44,7 +46,16 @@ const ResetPassword: NextPage<{ token: any }> = ({ token }) => {
               label="New Password"
               type="password"
             />
-            {tokenError ? <Box color="red">{tokenError}</Box> : null}
+            {tokenError ? (
+              <Flex>
+                <Box color="red" mr={2}>
+                  {tokenError}
+                </Box>
+                <NextLink href="/forgot-password">
+                  <Link>click here to get a new one</Link>
+                </NextLink>
+              </Flex>
+            ) : null}
             <Button
               mt={4}
               type="submit"
