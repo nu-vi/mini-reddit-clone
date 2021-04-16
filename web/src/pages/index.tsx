@@ -3,12 +3,15 @@ import { Box, Button, Flex, Heading, Stack, Text } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
+import { useState } from 'react';
 
 const Index = () => {
+  const [variables, setVariables] = useState({
+    limit: 10,
+    cursor: null as null | string,
+  });
   const [{ data, fetching }] = usePostsQuery({
-    variables: {
-      limit: 10,
-    },
+    variables,
   });
 
   const mapPosts = (data: any) =>
@@ -22,14 +25,25 @@ const Index = () => {
   const renderPosts = () => {
     if (fetching && !data) {
       return <div>loading...</div>;
-    } if (!fetching && !data) {
+    }
+    if (!fetching && !data) {
       return (
-        <Flex>
-          <Heading>Your posts query failed for some reason. Please try again later</Heading>
-        </Flex>
-      )
+        <>
+          <Heading>Your posts query failed for some reason.</Heading>
+          <br />
+          <Heading>Please try again later.</Heading>
+        </>
+      );
     } else {
-      return <Stack spacing={8}>{mapPosts(data)}</Stack>;
+      return (
+        <>
+          <Flex align="center">
+            <Heading mb={2}>Recent Posts</Heading>
+          </Flex>
+          <br />
+          <Stack spacing={8}>{mapPosts(data)}</Stack>
+        </>
+      );
     }
   };
 
@@ -37,7 +51,17 @@ const Index = () => {
     if (data) {
       return (
         <Flex>
-          <Button isLoading={fetching} m="auto" my={8}>
+          <Button
+            onClick={() =>
+              setVariables({
+                limit: variables.limit,
+                cursor: data.posts[data.posts.length - 1].createdAt,
+              })
+            }
+            isLoading={fetching}
+            m="auto"
+            my={8}
+          >
             load more posts
           </Button>
         </Flex>
@@ -49,10 +73,6 @@ const Index = () => {
 
   return (
     <Layout>
-      <Flex align="center">
-        <Heading mb={2}>Recent Posts</Heading>
-      </Flex>
-      <br />
       {renderPosts()}
       {renderButton()}
     </Layout>
