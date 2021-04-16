@@ -16,6 +16,7 @@ import {User} from "./entities/User";
 import {Post} from "./entities/Post";
 
 const main = async () => {
+  // @ts-ignore
   const connection = await createConnection({
     type: 'postgres',
     database: 'lireddit2',
