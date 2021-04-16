@@ -35,7 +35,7 @@ type Query {
     hello: String!
     me: User
     post(id: Float!): Post
-    posts: [Post!]!
+    posts(cursor: String, limit: Int!): [Post!]!
 }
 
 type User {

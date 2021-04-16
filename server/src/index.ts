@@ -16,7 +16,6 @@ import {User} from "./entities/User";
 import {Post} from "./entities/Post";
 
 const main = async () => {
-  // @ts-ignore
   const connection = await createConnection({
     type: 'postgres',
     database: 'lireddit2',
@@ -24,8 +23,11 @@ const main = async () => {
     password: 'postgres',
     logging: true,
     synchronize: !__prod__,
+    migrations: [__dirname],
     entities: [Post, User]
   });
+
+  await connection.runMigrations()
 
   const app = express();
   const RedisStore = connectRedis(session);
