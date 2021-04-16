@@ -12,8 +12,9 @@ import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
 import { __prod__, COOKIE_NAME } from './constants';
 import { MyContext } from './types';
-import {User} from "./entities/User";
-import {Post} from "./entities/Post";
+import { User } from './entities/User';
+import { Post } from './entities/Post';
+import path from 'path';
 
 const main = async () => {
   const connection = await createConnection({
@@ -23,11 +24,11 @@ const main = async () => {
     password: 'postgres',
     logging: true,
     synchronize: !__prod__,
-    migrations: [__dirname],
-    entities: [Post, User]
+    migrations: [path.join(__dirname, "./migrations/*")],
+    entities: [Post, User],
   });
 
-  await connection.runMigrations()
+  await connection.runMigrations();
 
   const app = express();
   const RedisStore = connectRedis(session);
