@@ -1,44 +1,60 @@
 import { withUrqlClient } from 'next-urql';
-import {Box, Heading, Link, Stack, Text} from '@chakra-ui/react';
-import NextLink from 'next/link';
+import { Box, Button, Flex, Heading, Stack, Text } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
-import {Post, usePostsQuery} from '../generated/graphql';
+import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 
 const Index = () => {
-  const [{ data }] = usePostsQuery({
+  const [{ data, fetching }] = usePostsQuery({
     variables: {
       limit: 10,
     },
   });
 
-  const mapPosts = (data: any) => data.posts.map((p: Post) => (
-    <Box key={p.id} p={5} shadow="md" borderWidth="1px">
-      <Heading fontSize="xl">{p.title}</Heading>
-      <Text mt={4}>{p.text.slice(0, 200) + '...'}</Text>
-    </Box>
-  ))
+  const mapPosts = (data: any) =>
+    data.posts.map((p: Post) => (
+      <Box key={p.id} p={5} shadow="md" borderWidth="1px">
+        <Heading fontSize="xl">{p.title}</Heading>
+        <Text mt={4}>{p.textSnippet + '...'}</Text>
+      </Box>
+    ));
 
-  const renderBody = () => {
-    if (!data) {
-      return null;
-    } else {
+  const renderPosts = () => {
+    if (fetching && !data) {
+      return <div>loading...</div>;
+    } if (!fetching && !data) {
       return (
-        <Stack spacing={8}>
-          {mapPosts(data)}
-        </Stack>
+        <Flex>
+          <Heading>Your posts query failed for some reason. Please try again later</Heading>
+        </Flex>
+      )
+    } else {
+      return <Stack spacing={8}>{mapPosts(data)}</Stack>;
+    }
+  };
+
+  const renderButton = () => {
+    if (data) {
+      return (
+        <Flex>
+          <Button isLoading={fetching} m="auto" my={8}>
+            load more posts
+          </Button>
+        </Flex>
       );
+    } else {
+      return null;
     }
   };
 
   return (
     <Layout>
-      <NextLink href="/create-post">
-        <Link>create post</Link>
-      </NextLink>
+      <Flex align="center">
+        <Heading mb={2}>Recent Posts</Heading>
+      </Flex>
       <br />
-      <br />
-      {renderBody()}
+      {renderPosts()}
+      {renderButton()}
     </Layout>
   );
 };
