@@ -10,12 +10,12 @@ const Index = () => {
     limit: 10,
     cursor: null as null | string,
   });
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
 
   const mapPosts = (data: any) =>
-    data.posts.map((p: Post) => (
+    data.posts.posts.map((p: Post) => (
       <Box key={p.id} p={5} shadow="md" borderWidth="1px">
         <Heading fontSize="xl">{p.title}</Heading>
         <Text mt={4}>{p.textSnippet + '...'}</Text>
@@ -48,17 +48,17 @@ const Index = () => {
   };
 
   const renderButton = () => {
-    if (data) {
+    if (data && data.posts.hasMore) {
       return (
         <Flex>
           <Button
             onClick={() =>
               setVariables({
                 limit: variables.limit,
-                cursor: data.posts[data.posts.length - 1].createdAt,
+                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
               })
             }
-            isLoading={fetching}
+            isLoading={stale}
             m="auto"
             my={8}
           >
