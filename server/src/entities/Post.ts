@@ -41,6 +41,7 @@ export class Post extends BaseEntity {
   @Column()
   originalPosterId: number;
 
+  @Field()
   @ManyToOne(() => User, (user) => user.posts)
   originalPoster: User;
 }
