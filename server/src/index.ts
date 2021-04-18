@@ -24,11 +24,13 @@ const main = async () => {
     password: 'postgres',
     logging: true,
     synchronize: !__prod__,
-    migrations: [path.join(__dirname, "./migrations/*")],
+    migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User],
   });
 
   await connection.runMigrations();
+
+  //await Post.delete({});
 
   const app = express();
   const RedisStore = connectRedis(session);
