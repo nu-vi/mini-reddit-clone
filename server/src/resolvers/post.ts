@@ -53,7 +53,13 @@ export class PostResolver {
     // const posts = await getConnection().query(
     //   `
     // select p.*,
-    // json_build_object('id', u.id, 'username', u.username, 'email', u.email) "originalPoster"
+    // json_build_object(
+    // 'id', u.id,
+    // 'username', u.username,
+    // 'email', u.email
+    // 'createdAt', u."createdAt"
+    //  'updatedAt, u."updatedAt"
+    // ) "originalPoster"
     // from post p
     // inner join public.user u on u.id = p."originalPosterId"
     // ${cursor ? `where p."createdAt" < $2` : ''}
