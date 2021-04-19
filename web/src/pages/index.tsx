@@ -1,13 +1,22 @@
 import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
-import { Box, Button, Flex, Heading, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  IconButton,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
+import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 
 const Index = () => {
   const [variables, setVariables] = useState({
-    limit: 10,
+    limit: 15,
     cursor: null as null | string,
   });
   const [{ data, fetching, stale }] = usePostsQuery({
@@ -36,10 +45,33 @@ const Index = () => {
 
   const mapPosts = (data: any) =>
     data.posts.posts.map((p: Post) => (
-      <Box key={p.id} p={5} shadow="md" borderWidth="1px">
-        <Heading fontSize="xl">{p.title}</Heading>
-        <Text mt={4}>{p.textSnippet + '...'}</Text>
-      </Box>
+      <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
+        <Flex
+          flexDir="column"
+          justifyContent="center"
+          alignItems="center"
+          marginRight={5}
+        >
+          <IconButton
+            icon={<ChevronUpIcon boxSize={7} />}
+            aria-label="upvote post"
+          />
+          <Text my={1} fontSize="lg">{p.points}</Text>
+          <IconButton
+            icon={<ChevronDownIcon boxSize={7} />}
+            aria-label="downvote post"
+          />
+        </Flex>
+        <Box>
+          <Heading fontSize="xl">{p.title}</Heading>
+          <Text fontSize="m" mt={1}>
+            Posted by {p.originalPoster.username}
+          </Text>
+          <Text fontSize="xl" mt={3}>
+            {p.textSnippet + '...'}
+          </Text>
+        </Box>
+      </Flex>
     ));
 
   const renderPosts = () => {
