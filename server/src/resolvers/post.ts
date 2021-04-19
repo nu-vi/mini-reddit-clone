@@ -17,12 +17,28 @@ import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
 import { getConnection } from 'typeorm';
 
+@ObjectType()
+class PostFieldError {
+  @Field()
+  field: string;
+  @Field()
+  message: string;
+}
+
 @InputType()
 class PostInput {
   @Field()
   title: string;
   @Field()
   text: string;
+}
+
+@ObjectType()
+class PostResponse {
+  @Field(() => [PostFieldError], { nullable: true })
+  errors?: PostFieldError[];
+  @Field(() => Post, { nullable: true })
+  post?: Post;
 }
 
 @ObjectType()
@@ -35,6 +51,44 @@ class PaginatedPosts {
 
 @Resolver(Post)
 export class PostResolver {
+  @Mutation(() => PostResponse)
+  @UseMiddleware(isAuth)
+  async createPost(
+    @Arg('input') input: PostInput,
+    @Ctx() { req }: MyContext
+  ): Promise<PostResponse> {
+    if (input.title.length <= 2) {
+      return {
+        errors: [
+          {
+            field: 'title',
+            message: 'Title length must be greater than  2',
+          },
+        ],
+      };
+    }
+
+    if (input.text.length <= 2) {
+      return {
+        errors: [
+          {
+            field: 'text',
+            message: 'Body length must be greater than  2',
+          },
+        ],
+      };
+    }
+
+    const post = Post.create({
+      ...input,
+      originalPosterId: req.session.userId,
+    });
+
+    await post.save();
+
+    return { post };
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg('limit', () => Int) limit: number,
@@ -85,7 +139,6 @@ export class PostResolver {
 
     const posts = await qb.getMany();
 
-    console.log(posts);
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
@@ -95,18 +148,6 @@ export class PostResolver {
   @Query(() => Post, { nullable: true })
   post(@Arg('id') id: number): Promise<Post | undefined> {
     return Post.findOne(id);
-  }
-
-  @Mutation(() => Post)
-  @UseMiddleware(isAuth)
-  async createPost(
-    @Arg('input') input: PostInput,
-    @Ctx() { req }: MyContext
-  ): Promise<Post> {
-    return Post.create({
-      ...input,
-      originalPosterId: req.session.userId,
-    }).save();
   }
 
   @Mutation(() => Post, { nullable: true })

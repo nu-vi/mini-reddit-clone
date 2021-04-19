@@ -8,6 +8,7 @@ import { createUrqlClient } from '../utils/createUrqlClient';
 import { useCreatePostMutation } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { userIsAuth } from '../utils/userIsAuth';
+import { toErrorMap } from '../utils/toErrorMap';
 
 const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
@@ -18,10 +19,14 @@ const CreatePost: React.FC<{}> = ({}) => {
     <Layout>
       <Formik
         initialValues={{ title: '', text: '' }}
-        onSubmit={async (values) => {
-          const { error } = await createPost({ input: values });
-          if (!error) {
-            await router.push('/');
+        onSubmit={async (values, { setErrors }) => {
+          const response = await createPost({ input: values });
+          if (response.data?.createPost.errors) {
+            setErrors(toErrorMap(response.data.createPost.errors));
+          } else if (response.data?.createPost.post) {
+            if (!response.error) {
+              await router.push('/');
+            }
           }
         }}
       >

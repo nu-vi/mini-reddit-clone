@@ -22,7 +22,7 @@ export type FieldError = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createPost: Post;
+  createPost: PostResponse;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
   register: UserResponse;
@@ -85,12 +85,25 @@ export type Post = {
   text: Scalars['String'];
   points: Scalars['Float'];
   originalPosterId: Scalars['Float'];
+  originalPoster: User;
   textSnippet: Scalars['String'];
+};
+
+export type PostFieldError = {
+  __typename?: 'PostFieldError';
+  field: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type PostInput = {
   title: Scalars['String'];
   text: Scalars['String'];
+};
+
+export type PostResponse = {
+  __typename?: 'PostResponse';
+  errors?: Maybe<Array<PostFieldError>>;
+  post?: Maybe<Post>;
 };
 
 export type Query = {
@@ -171,8 +184,14 @@ export type CreatePostMutationVariables = Exact<{
 export type CreatePostMutation = (
   { __typename?: 'Mutation' }
   & { createPost: (
-    { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'createdAt' | 'updatedAt' | 'title' | 'text' | 'points' | 'originalPosterId'>
+    { __typename?: 'PostResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'PostFieldError' }
+      & Pick<PostFieldError, 'field' | 'message'>
+    )>>, post?: Maybe<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'id' | 'createdAt' | 'updatedAt' | 'title' | 'text' | 'points' | 'originalPosterId'>
+    )> }
   ) }
 );
 
@@ -294,13 +313,19 @@ export function useResetPasswordMutation() {
 export const CreatePostDocument = gql`
     mutation CreatePost($input: PostInput!) {
   createPost(input: $input) {
-    id
-    createdAt
-    updatedAt
-    title
-    text
-    points
-    originalPosterId
+    errors {
+      field
+      message
+    }
+    post {
+      id
+      createdAt
+      updatedAt
+      title
+      text
+      points
+      originalPosterId
+    }
   }
 }
     `;

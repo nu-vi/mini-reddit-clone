@@ -11,7 +11,7 @@ type FieldError {
 }
 
 type Mutation {
-    createPost(input: PostInput!): Post!
+    createPost(input: PostInput!): PostResponse!
     deletePost(id: Float!): Boolean!
     forgotPassword(email: String!): Boolean!
     login(password: String!, usernameOrEmail: String!): UserResponse!
@@ -29,12 +29,23 @@ type PaginatedPosts {
 type Post {
     createdAt: String!
     id: Int!
+    originalPoster: User!
     originalPosterId: Float!
     points: Float!
     text: String!
     textSnippet: String!
     title: String!
     updatedAt: String!
+}
+
+type PostFieldError {
+    field: String!
+    message: String!
+}
+
+type PostResponse {
+    errors: [PostFieldError!]
+    post: Post
 }
 
 type Query {
