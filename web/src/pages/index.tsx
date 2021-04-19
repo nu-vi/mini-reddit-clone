@@ -20,12 +20,11 @@ const Index = () => {
   });
 
   const handleScroll: DetailedHTMLProps<any, any> = () => {
-    const heightLessTop =
-      document.documentElement.scrollHeight -
-      document.documentElement.scrollTop;
-    const alteredClientHeight = document.documentElement.clientHeight * 1.2;
+    const e = document.documentElement;
+    const userScrolled80Percent =
+      e.scrollHeight - e.scrollTop <= e.clientHeight * 1.2;
 
-    if (heightLessTop <= alteredClientHeight) {
+    if (userScrolled80Percent) {
       if (data && data.posts.hasMore) {
         setVariables({
           limit: variables.limit,

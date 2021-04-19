@@ -15,6 +15,7 @@ import { MyContext } from './types';
 import { User } from './entities/User';
 import { Post } from './entities/Post';
 import path from 'path';
+import { Upvote } from './entities/Upvote';
 
 const main = async () => {
   const connection = await createConnection({
@@ -25,7 +26,7 @@ const main = async () => {
     logging: true,
     synchronize: !__prod__,
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Post, User],
+    entities: [Post, User, Upvote],
   });
 
   await connection.runMigrations();

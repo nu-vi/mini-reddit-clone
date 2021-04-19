@@ -16,6 +16,7 @@ import { Post } from '../entities/Post';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
 import { getConnection } from 'typeorm';
+import { Upvote } from '../entities/Upvote';
 
 @ObjectType()
 class PostFieldError {
@@ -181,5 +182,52 @@ export class PostResolver {
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 200);
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware([isAuth])
+  async vote(
+    @Arg('postId', () => Int) postId: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const isUpvote = value !== -1;
+    const realValue = isUpvote ? 1 : -1;
+    const { userId } = req.session;
+
+    const post = await Post.findOne(postId);
+
+    if (!post) {
+      return false;
+    }
+
+    await Upvote.insert({
+      userId,
+      postId,
+      value: realValue,
+    });
+
+    post.points = post.points + realValue;
+
+    await Post.save(post);
+
+    // USING QUERY BUILDER
+    // await getConnection()
+    //   .createQueryBuilder()
+    //   .insert()
+    //   .into(Upvote)
+    //   .values({
+    //     userId,
+    //     postId,
+    //     value: realValue,
+    //   })
+    //   .update(Post)
+    //   .set({ points: () => 'points' + realValue })
+    //   .where('id = :postId', {
+    //     postId,
+    //   })
+    //   .execute();
+
+    return true;
   }
 }
