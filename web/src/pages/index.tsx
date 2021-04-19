@@ -1,9 +1,9 @@
+import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
 import { Box, Button, Flex, Heading, Stack, Text } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
-import { useState } from 'react';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -13,6 +13,27 @@ const Index = () => {
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  });
+
+  const handleScroll: DetailedHTMLProps<any, any> = () => {
+    const heightLessTop =
+      document.documentElement.scrollHeight -
+      document.documentElement.scrollTop;
+    const alteredClientHeight = document.documentElement.clientHeight * 1.2;
+
+    if (heightLessTop <= alteredClientHeight) {
+      if (data && data.posts.hasMore) {
+        setVariables({
+          limit: variables.limit,
+          cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+        });
+      }
+    }
+  };
 
   const mapPosts = (data: any) =>
     data.posts.posts.map((p: Post) => (
