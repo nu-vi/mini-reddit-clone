@@ -5,14 +5,13 @@ import {
   Button,
   Flex,
   Heading,
-  IconButton,
   Stack,
   Text,
 } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { PostVoteSection } from '../components/PostVoteSection';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -46,22 +45,7 @@ const Index = () => {
   const mapPosts = (data: any) =>
     data.posts.posts.map((p: Post) => (
       <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
-        <Flex
-          flexDir="column"
-          justifyContent="center"
-          alignItems="center"
-          marginRight={5}
-        >
-          <IconButton
-            icon={<ChevronUpIcon boxSize={7} />}
-            aria-label="upvote post"
-          />
-          <Text my={1} fontSize="lg">{p.points}</Text>
-          <IconButton
-            icon={<ChevronDownIcon boxSize={7} />}
-            aria-label="downvote post"
-          />
-        </Flex>
+        <PostVoteSection post={p} />
         <Box>
           <Heading fontSize="xl">{p.title}</Heading>
           <Text fontSize="m" mt={1}>
