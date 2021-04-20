@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Formik } from 'formik';
 import { InputField } from '../components/InputFieldC';
-import { Box, Button } from '@chakra-ui/react';
+import { Box, Button, useBreakpointValue } from '@chakra-ui/react';
 import { withUrqlClient } from 'next-urql';
 import { useRouter } from 'next/router';
 import { createUrqlClient } from '../utils/createUrqlClient';
@@ -14,9 +14,10 @@ const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
   userIsAuth();
   const [, createPost] = useCreatePostMutation();
+  const variant : "small" | "regular" | undefined = useBreakpointValue({ base: 'small', md: 'regular' });
 
   return (
-    <Layout>
+    <Layout variant={variant}>
       <Formik
         initialValues={{ title: '', text: '' }}
         onSubmit={async (values, { setErrors }) => {
