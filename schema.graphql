@@ -19,6 +19,7 @@ type Mutation {
     register(options: UsernamePasswordInput!): UserResponse!
     resetPassword(newPassword: String!, token: String!): UserResponse!
     updatePost(id: Float!, title: String): Post
+    vote(postId: Int!, value: Int!): Boolean!
 }
 
 type PaginatedPosts {

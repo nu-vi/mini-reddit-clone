@@ -196,37 +196,40 @@ export class PostResolver {
     const { userId } = req.session;
 
     const post = await Post.findOne(postId);
-
     if (!post) {
       return false;
     }
 
-    await Upvote.insert({
-      userId,
-      postId,
-      value: realValue,
-    });
+    const upvote = await Upvote.findOne({ where: { postId, userId } });
+    if (upvote && upvote.value !== realValue) {
+      // user has voted on this post before
+      // and is changing it
+      await Upvote.update(upvote, {
+        userId,
+        postId,
+        value: realValue,
+      });
+      post.points = post.points + 2 * realValue;
+      await Post.save(post);
 
-    post.points = post.points + realValue;
+    } else if (upvote && upvote.value === realValue) {
+      // user has voted on this post before
+      // and is cancelling it
+      await Upvote.delete(upvote);
+      post.points = post.points - realValue;
+      await Post.save(post);
 
-    await Post.save(post);
+    } else if (!upvote) {
+      // user has never voted before
+      await Upvote.insert({
+        userId,
+        postId,
+        value: realValue,
+      });
 
-    // USING QUERY BUILDER
-    // await getConnection()
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(Upvote)
-    //   .values({
-    //     userId,
-    //     postId,
-    //     value: realValue,
-    //   })
-    //   .update(Post)
-    //   .set({ points: () => 'points' + realValue })
-    //   .where('id = :postId', {
-    //     postId,
-    //   })
-    //   .execute();
+      post.points = post.points + realValue;
+      await Post.save(post);
+    }
 
     return true;
   }

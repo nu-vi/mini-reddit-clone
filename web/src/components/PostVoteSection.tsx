@@ -1,6 +1,6 @@
-import React from 'react';
-import { PostSnippetFragment } from '../generated/graphql';
-import { Flex, IconButton, Text } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
+import { Flex, IconButton, Spinner, Text } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 
 interface PostVoteSectionProps {
@@ -9,6 +9,10 @@ interface PostVoteSectionProps {
 }
 
 export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
+  const [loadingState, setLoadingState] = useState<
+    'upvote-loading' | 'downvote-loading' | 'not-loading'
+  >('not-loading');
+  const [, vote] = useVoteMutation();
   return (
     <Flex
       flexDir="column"
@@ -17,13 +21,27 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
       marginRight={5}
     >
       <IconButton
+        onClick={() => {
+          setLoadingState('upvote-loading');
+          vote({
+            postId: post.id,
+            value: 1,
+          }).then(() => setLoadingState('not-loading'));
+        }}
         icon={<ChevronUpIcon boxSize={7} />}
         aria-label="upvote post"
       />
       <Text my={1} fontSize="lg">
-        {post.points}
+        {loadingState === 'not-loading' ? post.points : <Spinner size="sm" />}
       </Text>
       <IconButton
+        onClick={() => {
+          setLoadingState('downvote-loading');
+          vote({
+            postId: post.id,
+            value: -1,
+          }).then(() => setLoadingState('not-loading'));
+        }}
         icon={<ChevronDownIcon boxSize={7} />}
         aria-label="downvote post"
       />
