@@ -184,20 +184,20 @@ export class PostResolver {
     return root.text.slice(0, 165);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Int)
   @UseMiddleware([isAuth])
   async vote(
     @Arg('postId', () => Int) postId: number,
     @Arg('value', () => Int) value: number,
     @Ctx() { req }: MyContext
-  ) {
+  ): Promise<number> {
     const isUpvote = value !== -1;
     const realValue = isUpvote ? 1 : -1;
     const { userId } = req.session;
 
     const post = await Post.findOne(postId);
     if (!post) {
-      return false;
+      return 0;
     }
 
     const upvote = await Upvote.findOne({ where: { postId, userId } });
@@ -211,14 +211,12 @@ export class PostResolver {
       });
       post.points = post.points + 2 * realValue;
       await Post.save(post);
-
     } else if (upvote && upvote.value === realValue) {
       // user has voted on this post before
       // and is cancelling it
       await Upvote.delete(upvote);
       post.points = post.points - realValue;
       await Post.save(post);
-
     } else if (!upvote) {
       // user has never voted before
       await Upvote.insert({
@@ -231,6 +229,6 @@ export class PostResolver {
       await Post.save(post);
     }
 
-    return true;
+    return post.points;
   }
 }
