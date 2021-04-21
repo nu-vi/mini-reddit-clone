@@ -163,6 +163,7 @@ export class UserResolver {
       },
     });
     if (!user) {
+      console.log('user not found');
       return true;
     }
 
