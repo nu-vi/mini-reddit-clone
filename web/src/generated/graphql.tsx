@@ -279,7 +279,7 @@ export type VoteMutation = (
   { __typename?: 'Mutation' }
   & { vote: (
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'points' | 'voteStatus'>
+    & Pick<Post, 'id' | 'points'>
   ) }
 );
 
@@ -436,7 +436,6 @@ export const VoteDocument = gql`
   vote(value: $value, postId: $postId) {
     id
     points
-    voteStatus
   }
 }
     `;

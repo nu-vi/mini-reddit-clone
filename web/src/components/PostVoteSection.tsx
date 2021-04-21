@@ -30,7 +30,7 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
             value: 1,
           }).then(({ data }) => {
             if (data) {
-              console.log(data)
+              console.log(data);
               setCurrentPoints(data.vote.points);
             }
             setLoadingState('not-loading');
@@ -56,8 +56,9 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
             setLoadingState('not-loading');
           });
         }}
-        backgroundColor="tomato"
-        color="white"
+        colorScheme={post.voteStatus === -1 ? 'red' : undefined}
+        backgroundColor={post.voteStatus === -1 ? 'tomato' : undefined}
+        color={post.voteStatus === -1 ? 'white' : undefined}
         icon={<ChevronDownIcon boxSize={7} />}
         aria-label="downvote post"
       />
