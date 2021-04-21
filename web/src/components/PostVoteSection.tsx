@@ -30,12 +30,13 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
             value: 1,
           }).then(({ data }) => {
             if (data) {
-              console.log(data.vote);
-              setCurrentPoints(data.vote);
+              console.log(data)
+              setCurrentPoints(data.vote.points);
             }
             setLoadingState('not-loading');
           });
         }}
+        colorScheme={post.voteStatus === 1 ? 'green' : undefined}
         icon={<ChevronUpIcon boxSize={7} />}
         aria-label="upvote post"
       />
@@ -50,11 +51,13 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
             value: -1,
           }).then(({ data }) => {
             if (data) {
-              setCurrentPoints(data.vote);
+              setCurrentPoints(data.vote.points);
             }
             setLoadingState('not-loading');
           });
         }}
+        backgroundColor="tomato"
+        color="white"
         icon={<ChevronDownIcon boxSize={7} />}
         aria-label="downvote post"
       />

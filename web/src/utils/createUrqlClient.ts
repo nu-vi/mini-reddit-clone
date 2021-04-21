@@ -13,8 +13,10 @@ import {
   MeDocument,
   MeQuery,
   RegisterMutation,
+  VoteMutationVariables,
 } from '../generated/graphql';
 import { betterUpdateQuery } from './betterUpdateQuery';
+import gql from 'graphql-tag';
 
 const errorExchange: Exchange = ({ forward }) => (ops$) => {
   return pipe(
@@ -81,6 +83,44 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          vote: (_result, args, cache, _info) => {
+            const { postId, value } = args as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  voteStatus
+                }
+              `,
+              { id: postId } as any
+            );
+            console.log('voteStatus: ', data.voteStatus);
+            console.log('value: ', value);
+
+            if (data) {
+              console.log('data: ', data);
+              console.log('cache:', cache);
+              if (data.voteStatus === value) {
+                cache.writeFragment(
+                  gql`
+                    fragment __ on Post {
+                      voteStatus
+                    }
+                  `,
+                  { id: postId, voteStatus: null } as any
+                );
+              }
+
+              cache.writeFragment(
+                gql`
+                  fragment __ on Post {
+                    voteStatus
+                  }
+                `,
+                { id: postId, voteStatus: value } as any
+              );
+            }
+          },
           createPost: (_result, _args, cache, _info) => {
             const allFields = cache.inspectFields('Query');
             const fieldInfos = allFields.filter(
