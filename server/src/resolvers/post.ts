@@ -197,11 +197,6 @@ export class PostResolver {
     return true;
   }
 
-  @FieldResolver(() => String)
-  textSnippet(@Root() root: Post) {
-    return root.text.slice(0, 165);
-  }
-
   @Mutation(() => Post || null)
   @UseMiddleware([isAuth])
   async vote(
@@ -250,5 +245,10 @@ export class PostResolver {
     }
 
     return post;
+  }
+
+  @FieldResolver(() => String)
+  textSnippet(@Root() root: Post) {
+    return root.text.slice(0, 165);
   }
 }

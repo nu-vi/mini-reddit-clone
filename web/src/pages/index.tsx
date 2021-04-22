@@ -1,13 +1,6 @@
 import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Stack,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Flex, Heading, Spinner, Stack, Text } from '@chakra-ui/react';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
@@ -86,21 +79,33 @@ const Index = () => {
   const renderButton = () => {
     if (data && data.posts.hasMore) {
       return (
-        <Flex>
-          <Button
-            onClick={() =>
-              setVariables({
-                limit: variables.limit,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
-              })
-            }
-            isLoading={stale}
-            m="auto"
-            my={8}
-          >
-            load more posts
-          </Button>
-        </Flex>
+        <>
+          <Stack backgroundColor="gray.50" spacing={8} mt={8}>
+            <Flex
+              key="loading"
+              p={5}
+              shadow="md"
+              borderWidth="1px"
+              justifyContent="center"
+            >
+              <Box>
+                {stale ? (
+                  <Spinner
+                    thickness="6px"
+                    emptyColor="gray.200"
+                    color="#b7b7b7"
+                    size="xl"
+                    p={7}
+                    m={1}
+                  />
+                ) : (
+                  <Box p={12}></Box>
+                )}
+              </Box>
+            </Flex>
+          </Stack>
+          <Box mt={8}></Box>
+        </>
       );
     } else {
       return null;

@@ -163,7 +163,6 @@ export class UserResolver {
       },
     });
     if (!user) {
-      console.log('user not found');
       return true;
     }
 
@@ -243,8 +242,8 @@ export class UserResolver {
 
   @FieldResolver(() => String)
   email(@Root() user: User, @Ctx() { req }: MyContext) {
-    // this is the current user, it's ok to show them their own email
     if (req.session.userId === user.id) {
+      // this is the current user, it's ok to show them their own email
       return user.email;
     }
     // current user wants to see someone else's email

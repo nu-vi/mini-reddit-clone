@@ -13,14 +13,13 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
-import { isServer } from '../utils/isServer';
 import { HamburgerIcon, Icon } from '@chakra-ui/icons';
 import { CgLogOut, CgProfile, CgAdd, CgLogIn, CgUserAdd } from 'react-icons/cg';
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-  const [{ data, fetching }] = useMeQuery({ pause: isServer() });
+  const [{ data, fetching }] = useMeQuery();
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
   let body = null;
 
@@ -53,17 +52,20 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
             />
             <MenuList>
               <NextLink href="/login">
-                <MenuItem fontSize="lg" icon={<Icon as={CgLogIn} boxSize={6} />}>
-                 login
+                <MenuItem
+                  fontSize="lg"
+                  icon={<Icon as={CgLogIn} boxSize={6} />}
+                >
+                  login
                 </MenuItem>
               </NextLink>
               <NextLink href="/register">
-              <MenuItem
-                fontSize="lg"
-                icon={<Icon as={CgUserAdd} boxSize={6} />}
-              >
-                register
-              </MenuItem>
+                <MenuItem
+                  fontSize="lg"
+                  icon={<Icon as={CgUserAdd} boxSize={6} />}
+                >
+                  register
+                </MenuItem>
               </NextLink>
             </MenuList>
           </Menu>
