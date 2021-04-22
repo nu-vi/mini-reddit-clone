@@ -1,6 +1,15 @@
 import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
-import { Box, Flex, Heading, Spinner, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Heading,
+  Link,
+  Spinner,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
@@ -40,7 +49,11 @@ const Index = () => {
       <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
         <PostVoteSection post={p} />
         <Box>
-          <Heading fontSize="xl">{p.title}</Heading>
+          <NextLink href="/post/[id]" as={`/post/${p.id}`}>
+            <Link>
+              <Heading fontSize="xl">{p.title}</Heading>
+            </Link>
+          </NextLink>
           <Text fontSize="m" mt={1}>
             Posted by {p.originalPoster.username}
           </Text>

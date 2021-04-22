@@ -136,12 +136,14 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 
   return (
     <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={3} align="center">
-      <NextLink href="/">
-        <Link as={Heading} mr="auto">
-          LiReddit
-        </Link>
-      </NextLink>
-      <Box ml="auto">{body}</Box>
+      {/*<Flex align="center" m="auto" maxW={1000} flex={1}>*/}
+        <NextLink href="/">
+          <Link as={Heading} mr="auto">
+            LiReddit
+          </Link>
+        </NextLink>
+        <Box ml="auto">{body}</Box>
+      {/*</Flex>*/}
     </Flex>
   );
 };
