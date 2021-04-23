@@ -12,7 +12,7 @@ type FieldError {
 
 type Mutation {
     createPost(input: PostInput!): PostResponse!
-    deletePost(id: Float!): Boolean!
+    deletePost(id: Int!): Boolean!
     forgotPassword(email: String!): Boolean!
     login(password: String!, usernameOrEmail: String!): UserResponse!
     logout: Boolean!
@@ -32,7 +32,7 @@ type Post {
     id: Int!
     originalPoster: User!
     originalPosterId: Float!
-    points: Float!
+    points: Int!
     text: String!
     textSnippet: String!
     title: String!

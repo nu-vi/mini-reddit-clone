@@ -4,6 +4,7 @@ import {
   Box,
   Flex,
   Heading,
+  IconButton,
   Link,
   Spinner,
   Stack,
@@ -11,9 +12,14 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { createUrqlClient } from '../utils/createUrqlClient';
-import { Post, usePostsQuery } from '../generated/graphql';
+import {
+  Post,
+  useDeletePostMutation,
+  usePostsQuery,
+} from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { PostVoteSection } from '../components/PostVoteSection';
+import { DeleteIcon } from '@chakra-ui/icons';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -24,16 +30,13 @@ const Index = () => {
     variables,
   });
 
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  });
+  const [, deletePost] = useDeletePostMutation();
 
   const handleScroll: DetailedHTMLProps<any, any> = () => {
     const e = document.documentElement;
+
     const userScrolled80Percent =
       e.scrollHeight - e.scrollTop <= e.clientHeight * 1.2;
-
     if (userScrolled80Percent) {
       if (data && data.posts.hasMore) {
         setVariables({
@@ -44,25 +47,44 @@ const Index = () => {
     }
   };
 
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  });
+
   const mapPosts = (data: any) =>
-    data.posts.posts.map((p: Post) => (
-      <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
-        <PostVoteSection post={p} />
-        <Box>
-          <NextLink href="/post/[id]" as={`/post/${p.id}`}>
-            <Link>
-              <Heading fontSize="xl">{p.title}</Heading>
-            </Link>
-          </NextLink>
-          <Text fontSize="m" mt={1}>
-            Posted by {p.originalPoster.username}
-          </Text>
-          <Text fontSize="xl" mt={3}>
-            {p.textSnippet + '...'}
-          </Text>
-        </Box>
-      </Flex>
-    ));
+    data.posts.posts.map((p: Post | null) =>
+      !p ? null : (
+        <Flex key={p.id} p={5} shadow="md" borderWidth="1px">
+          <PostVoteSection post={p} />
+          <Box flex={1}>
+            <Flex>
+              <Box>
+                <NextLink href="/post/[id]" as={`/post/${p.id}`}>
+                  <Link>
+                    <Heading fontSize="xl">{p.title}</Heading>
+                  </Link>
+                </NextLink>
+                <Text fontSize="m" mt={1}>
+                  Posted by {p.originalPoster.username}
+                </Text>
+              </Box>
+              <IconButton
+                ml="auto"
+                icon={<DeleteIcon />}
+                aria-label="Delete Post"
+                onClick={() => {
+                  deletePost({ id: p.id });
+                }}
+              />
+            </Flex>
+            <Text fontSize="xl" mt={3}>
+              {p.textSnippet + '...'}
+            </Text>
+          </Box>
+        </Flex>
+      )
+    );
 
   const renderPosts = () => {
     if (fetching && !data) {

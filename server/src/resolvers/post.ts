@@ -171,7 +171,7 @@ export class PostResolver {
 
   @Mutation(() => Post, { nullable: true })
   async updatePost(
-    @Arg('id') id: number,
+    @Arg('id', () => Int) id: number,
     @Arg('title', () => String, { nullable: true }) title: string
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
@@ -187,18 +187,25 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg('id') id: number): Promise<boolean> {
-    try {
-      await Post.delete(id);
-    } catch (err) {
-      console.error(err);
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg('id', () => Int) id: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    const post = await Post.findOne(id);
+    if (!post) {
       return false;
     }
+    if (post.originalPosterId !== req.session.userId) {
+      throw new Error('not authorized');
+    }
+      await Upvote.delete({ postId: id });
+      await Post.delete({ id });
     return true;
   }
 
   @Mutation(() => Post || null)
-  @UseMiddleware([isAuth])
+  @UseMiddleware(isAuth)
   async vote(
     @Arg('postId', () => Int) postId: number,
     @Arg('value', () => Int) value: number,

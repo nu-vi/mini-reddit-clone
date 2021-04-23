@@ -1,10 +1,10 @@
 import React from 'react';
 import { withUrqlClient } from 'next-urql';
-import { createUrqlClient } from '../../utils/createUrqlClient';
+import { Heading, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import { createUrqlClient } from '../../utils/createUrqlClient';
 import { usePostQuery } from '../../generated/graphql';
 import { Layout } from '../../components/Layout';
-import { Heading, Text } from '@chakra-ui/react';
 
 export const Post = ({}) => {
   const router = useRouter();
