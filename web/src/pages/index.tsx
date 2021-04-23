@@ -2,13 +2,22 @@ import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
 import {
   Box,
+  Button,
   Flex,
   Heading,
   IconButton,
   Link,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Spinner,
   Stack,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { createUrqlClient } from '../utils/createUrqlClient';
@@ -27,11 +36,13 @@ const Index = () => {
     limit: 15,
     cursor: null as null | string,
   });
+  const [postToDelete, setPostToDelete] = useState<Post, null>(null);
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
-  const [{ data: me }] = useMeQuery();
+  const [{ data: meData }] = useMeQuery();
   const [, deletePost] = useDeletePostMutation();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -81,7 +92,7 @@ const Index = () => {
     );
 
   const renderAdminButtons = (p: Post) => {
-    if (p.originalPoster.id === me?.me?.id) {
+    if (p.originalPoster.id === meData?.me?.id) {
       return (
         <>
           <NextLink href="/post/edit/[id]" as={`post/edit/${p.id}`}>
@@ -97,8 +108,9 @@ const Index = () => {
             icon={<DeleteIcon boxSize={5} />}
             aria-label="Delete Post"
             size="sm"
-            onClick={async () => {
-              await deletePost({ id: p.id });
+            onClick={() => {
+              setPostToDelete(p);
+              onOpen();
             }}
           />
         </>
@@ -133,7 +145,7 @@ const Index = () => {
     }
   };
 
-  const renderButton = () => {
+  const renderLoadingPosts = () => {
     if (data && data.posts.hasMore) {
       return (
         <>
@@ -171,8 +183,35 @@ const Index = () => {
 
   return (
     <Layout>
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent top={20}>
+            <ModalHeader>Delete Post</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              Are you sure you want to delete the{' '}
+              <b>{!postToDelete ? null : postToDelete.title}</b> post?
+            </ModalBody>
+            <ModalFooter>
+              <Button mr={3} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={async () => {
+                  await deletePost({
+                    id: postToDelete.id,
+                  });
+                  onClose();
+                }}
+              >
+                Delete
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       {renderPosts()}
-      {renderButton()}
+      {renderLoadingPosts()}
     </Layout>
   );
 };
