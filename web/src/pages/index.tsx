@@ -15,11 +15,12 @@ import { createUrqlClient } from '../utils/createUrqlClient';
 import {
   Post,
   useDeletePostMutation,
+  useMeQuery,
   usePostsQuery,
 } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { PostVoteSection } from '../components/PostVoteSection';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -29,8 +30,13 @@ const Index = () => {
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
-
+  const [{ data: me }] = useMeQuery();
   const [, deletePost] = useDeletePostMutation();
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  });
 
   const handleScroll: DetailedHTMLProps<any, any> = () => {
     const e = document.documentElement;
@@ -46,11 +52,6 @@ const Index = () => {
       }
     }
   };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  });
 
   const mapPosts = (data: any) =>
     data.posts.posts.map((p: Post | null) =>
@@ -69,14 +70,7 @@ const Index = () => {
                   Posted by {p.originalPoster.username}
                 </Text>
               </Box>
-              <IconButton
-                ml="auto"
-                icon={<DeleteIcon />}
-                aria-label="Delete Post"
-                onClick={() => {
-                  deletePost({ id: p.id });
-                }}
-              />
+              {renderAdminButtons(p)}
             </Flex>
             <Text fontSize="xl" mt={3}>
               {p.textSnippet + '...'}
@@ -85,6 +79,34 @@ const Index = () => {
         </Flex>
       )
     );
+
+  const renderAdminButtons = (p: Post) => {
+    if (p.originalPoster.id === me?.me?.id) {
+      return (
+        <>
+          <NextLink href="/post/edit/[id]" as={`post/edit/${p.id}`}>
+            <IconButton
+              ml="auto"
+              icon={<EditIcon boxSize={5} />}
+              aria-label="Delete Post"
+              size="sm"
+            />
+          </NextLink>
+          <IconButton
+            ml={2}
+            icon={<DeleteIcon boxSize={5} />}
+            aria-label="Delete Post"
+            size="sm"
+            onClick={async () => {
+              await deletePost({ id: p.id });
+            }}
+          />
+        </>
+      );
+    } else {
+      return null;
+    }
+  };
 
   const renderPosts = () => {
     if (fetching && !data) {

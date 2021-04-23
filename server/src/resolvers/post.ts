@@ -170,19 +170,30 @@ export class PostResolver {
   }
 
   @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async updatePost(
     @Arg('id', () => Int) id: number,
-    @Arg('title', () => String, { nullable: true }) title: string
+    @Arg('title', () => String, { nullable: true }) title: string,
+    @Arg('text', () => String, { nullable: true }) text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
     const post = await Post.findOne(id);
     if (!post) {
       return null;
     }
-
+    if (post.originalPosterId !== req.session.userId) {
+      throw new Error('not authorized');
+    }
+    if (typeof title === 'undefined' && typeof text === 'undefined') {
+      return post;
+    }
     if (typeof title !== 'undefined') {
       post.title = title;
-      await Post.save(post);
     }
+    if (typeof text !== 'undefined') {
+      post.text = text;
+    }
+    await Post.save(post);
     return post;
   }
 
@@ -199,8 +210,8 @@ export class PostResolver {
     if (post.originalPosterId !== req.session.userId) {
       throw new Error('not authorized');
     }
-      await Upvote.delete({ postId: id });
-      await Post.delete({ id });
+    await Upvote.delete({ postId: id });
+    await Post.delete({ id });
     return true;
   }
 
