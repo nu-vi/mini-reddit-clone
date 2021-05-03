@@ -11,6 +11,7 @@ import { userIsAuth } from '../utils/userIsAuth';
 import { toErrorMap } from '../utils/toErrorMap';
 
 const CreatePost: React.FC<{}> = ({}) => {
+
   const router = useRouter();
   userIsAuth();
   const [, createPost] = useCreatePostMutation();

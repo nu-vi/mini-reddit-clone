@@ -78,7 +78,7 @@ const invalidateAllPosts = (cache: Cache) => {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = '';
   if (isServer()) {
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
@@ -121,12 +121,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 `,
                 { id: postId } as any
               );
-              console.log('voteStatus: ', data.voteStatus);
-              console.log('value: ', value);
 
               if (data) {
-                console.log('data: ', data);
-
                 if (data.voteStatus === value) {
                   cache.writeFragment(
                     gql`

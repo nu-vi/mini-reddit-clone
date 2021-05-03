@@ -36,6 +36,7 @@ const Index = () => {
     limit: 15,
     cursor: null as null | string,
   });
+  // @ts-ignore
   const [postToDelete, setPostToDelete] = useState<Post, null>(null);
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
@@ -183,33 +184,33 @@ const Index = () => {
 
   return (
     <Layout>
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent top={20}>
-            <ModalHeader>Delete Post</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              Are you sure you want to delete the{' '}
-              <b>{!postToDelete ? null : postToDelete.title}</b> post?
-            </ModalBody>
-            <ModalFooter>
-              <Button mr={3} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={async () => {
-                  await deletePost({
-                    id: postToDelete.id,
-                  });
-                  onClose();
-                }}
-              >
-                Delete
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent top={20}>
+          <ModalHeader>Delete Post</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Are you sure you want to delete the{' '}
+            <b>{!postToDelete ? null : postToDelete.title}</b> post?
+          </ModalBody>
+          <ModalFooter>
+            <Button mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={async () => {
+                await deletePost({
+                  id: postToDelete.id,
+                });
+                onClose();
+              }}
+            >
+              Delete
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       {renderPosts()}
       {renderLoadingPosts()}
     </Layout>
