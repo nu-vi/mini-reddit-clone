@@ -2,18 +2,9 @@ import { DetailedHTMLProps, useEffect, useState } from 'react';
 import { withUrqlClient } from 'next-urql';
 import {
   Box,
-  Button,
   Flex,
   Heading,
-  IconButton,
   Link,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spinner,
   Stack,
   Text,
@@ -29,7 +20,8 @@ import {
 } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { PostVoteSection } from '../components/PostVoteSection';
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { DeleteModal } from '../components/DeleteModal';
+import { AdminButtons } from '../components/AdminButtons';
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -82,7 +74,10 @@ const Index = () => {
                   Posted by {p.originalPoster.username}
                 </Text>
               </Box>
-              {renderAdminButtons(p)}
+              {AdminButtons(p, meData, () => {
+                setPostToDelete(p);
+                onOpen();
+              })}
             </Flex>
             <Text fontSize="xl" mt={3}>
               {p.textSnippet + '...'}
@@ -91,35 +86,6 @@ const Index = () => {
         </Flex>
       )
     );
-
-  const renderAdminButtons = (p: Post) => {
-    if (p.originalPoster.id === meData?.me?.id) {
-      return (
-        <>
-          <NextLink href="/post/edit/[id]" as={`post/edit/${p.id}`}>
-            <IconButton
-              ml="auto"
-              icon={<EditIcon boxSize={5} />}
-              aria-label="Delete Post"
-              size="sm"
-            />
-          </NextLink>
-          <IconButton
-            ml={2}
-            icon={<DeleteIcon boxSize={5} />}
-            aria-label="Delete Post"
-            size="sm"
-            onClick={() => {
-              setPostToDelete(p);
-              onOpen();
-            }}
-          />
-        </>
-      );
-    } else {
-      return null;
-    }
-  };
 
   const renderPosts = () => {
     if (fetching && !data) {
@@ -184,33 +150,12 @@ const Index = () => {
 
   return (
     <Layout>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent top={20}>
-          <ModalHeader>Delete Post</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to delete the{' '}
-            <b>{!postToDelete ? null : postToDelete.title}</b> post?
-          </ModalBody>
-          <ModalFooter>
-            <Button mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={async () => {
-                await deletePost({
-                  id: postToDelete.id,
-                });
-                onClose();
-              }}
-            >
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {DeleteModal(postToDelete, isOpen, onClose, async () => {
+        await deletePost({
+          id: postToDelete.id,
+        });
+        onClose();
+      })}
       {renderPosts()}
       {renderLoadingPosts()}
     </Layout>
