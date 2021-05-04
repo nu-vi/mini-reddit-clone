@@ -24,7 +24,7 @@ const Index = () => {
     cursor: null as null | string,
   });
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
-  const [{ data, fetching, stale }] = usePostsQuery({
+  const [{ data, fetching, stale, error }] = usePostsQuery({
     variables,
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -95,6 +95,9 @@ const Index = () => {
           <Heading>Your posts query failed for some reason.</Heading>
           <br />
           <Heading>Please try again later.</Heading>
+          <Text mt={8}>
+            {error?.message}
+          </Text>
         </>
       );
     } else {

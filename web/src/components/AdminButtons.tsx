@@ -20,7 +20,7 @@ export const AdminButtons: React.FC<AdminButtonProps> = ({
   if (opId === meData?.me?.id) {
     return (
       <>
-        <NextLink href="/post/edit/[id]" as={`post/edit/${postId}`}>
+        <NextLink href="/post/edit/[id]" as={`/post/edit/${postId}`}>
           <IconButton
             icon={<EditIcon boxSize={5} />}
             aria-label="Edit Post"

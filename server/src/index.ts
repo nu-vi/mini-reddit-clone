@@ -16,6 +16,8 @@ import { User } from './entities/User';
 import { Post } from './entities/Post';
 import path from 'path';
 import { Upvote } from './entities/Upvote';
+import { createUserLoader } from './utils/dataLoaders/createUserLoader';
+import { createUpvoteLoader } from './utils/dataLoaders/createUpvoteLoader';
 
 const main = async () => {
   const connection = await createConnection({
@@ -68,7 +70,13 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ req, res, redis }),
+    context: ({ req, res }): MyContext => ({
+      req,
+      res,
+      redis,
+      userLoader: createUserLoader(),
+      upvoteLoader: createUpvoteLoader(),
+    }),
   });
 
   apolloServer.applyMiddleware({

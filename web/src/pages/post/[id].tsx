@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { withUrqlClient } from 'next-urql';
-import { Heading, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, useDisclosure } from '@chakra-ui/react';
 import { createUrqlClient } from '../../utils/createUrqlClient';
 import { Layout } from '../../components/Layout';
 import { useGetPostFromUrl } from '../../utils/useGetPostFromUrl';
+import { AdminButtons } from '../../components/AdminButtons';
+import { DeleteModal } from '../../components/DeleteModal';
 
 export const Post = ({}) => {
   const [{ data, fetching }] = useGetPostFromUrl();
+  const [postToDelete, setPostToDelete] = useState<any>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const renderBody = () => {
     if (!data) {
@@ -31,13 +35,32 @@ export const Post = ({}) => {
       } else {
         return (
           <>
-            <Heading mt={4}>{data.post.title}</Heading>
+            <DeleteModal
+              postToDelete={postToDelete!}
+              isOpen={isOpen}
+              onClose={onClose}
+              routeTo="/"
+            />
+            <Flex mt={4} alignItems="center">
+              <Heading>{data.post.title}</Heading>
+              <Box ml="auto" mr={10}>
+                <AdminButtons
+                  postId={data.post.id}
+                  opId={data.post.originalPoster.id}
+                  onDeleteClick={() => {
+                    setPostToDelete(data?.post);
+                    onOpen();
+                  }}
+                />
+              </Box>
+            </Flex>
             <Text fontSize="xl" mt={4}>
               {data.post.text}
             </Text>
           </>
         );
       }
+      
     }
   };
 

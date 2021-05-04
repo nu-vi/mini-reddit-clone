@@ -10,19 +10,23 @@ import {
   ModalOverlay,
 } from '@chakra-ui/react';
 import { Post, useDeletePostMutation } from '../generated/graphql';
+import { useRouter } from 'next/router';
 
 interface DeleteModalProps {
   postToDelete: Post;
   isOpen: boolean;
   onClose: () => void;
+  routeTo?: string;
 }
 
 export const DeleteModal: React.FC<DeleteModalProps> = ({
   postToDelete,
   isOpen,
   onClose,
+  routeTo,
 }) => {
   const [, deletePost] = useDeletePostMutation();
+  const router = useRouter();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -45,6 +49,9 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                 id: postToDelete.id,
               });
               onClose();
+              if (routeTo) {
+                await router.push(routeTo);
+              }
             }}
           >
             Delete
