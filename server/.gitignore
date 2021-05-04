@@ -1,3 +1,4 @@
 dist
 node_modules
-src/privateConstants.ts
+.env
+.env.production

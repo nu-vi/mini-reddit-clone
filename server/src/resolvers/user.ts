@@ -176,7 +176,7 @@ export class UserResolver {
       timeToExpire
     );
 
-    const body = `<a href="http://localhost:3000/reset-password/${token}">reset password</a>`;
+    const body = `<a href="${process.env.CORS_ORIGIN}/reset-password/${token}">reset password</a>`;
 
     await sendEmail(email, 'Reset your LiReddit password', body);
     return true;

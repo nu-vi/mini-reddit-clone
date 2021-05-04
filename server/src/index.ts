@@ -7,6 +7,7 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
 import { createConnection } from 'typeorm';
+import 'dotenv-safe/config';
 import { HelloResolver } from './resolvers/hello';
 import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
@@ -22,9 +23,7 @@ import { createUpvoteLoader } from './utils/dataLoaders/createUpvoteLoader';
 const main = async () => {
   const connection = await createConnection({
     type: 'postgres',
-    database: 'lireddit2',
-    username: 'postgres',
-    password: 'postgres',
+    url: process.env.REDIS_URL,
     logging: true,
     synchronize: !__prod__,
     migrations: [path.join(__dirname, './migrations/*')],
@@ -37,11 +36,11 @@ const main = async () => {
 
   const app = express();
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
 
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -57,10 +56,11 @@ const main = async () => {
         maxAge: 1000 * 3600 * 24 * 365 * 10, //10 years
         httpOnly: true,
         sameSite: 'lax', //csrf
-        secure: __prod__, // cookie only works in https
+        secure: __prod__, // cookie only works in https if in production
+        domain: __prod__ ? '.nunovinagreiro.com' : undefined,
       },
       saveUninitialized: false,
-      secret: '3422ewuqyweiure8rwdjfkhsd89fe759rewry',
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -84,7 +84,7 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log('server started on localhost:4000');
   });
 };

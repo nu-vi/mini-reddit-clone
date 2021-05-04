@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { ZOHO_PASSWORD, ZOHO_USER } from '../privateConstants';
 
 // async..await is not allowed in global scope, must use a wrapper
 export async function sendEmail(to: string, subject: string, html: string) {
@@ -26,8 +25,8 @@ export async function sendEmail(to: string, subject: string, html: string) {
     port: 465,
     secure: true,
     auth: {
-      user: ZOHO_USER,
-      pass: ZOHO_PASSWORD,
+      user: process.env.ZOHO_USER,
+      pass: process.env.ZOHO_PASSWORD,
     },
   });
 

@@ -100,44 +100,37 @@ export class PostResolver {
     const realLimitPlusOne = realLimit + 1;
 
     // USING THE ACTUAL QUERY
-    const replacements: any[] = [realLimitPlusOne];
-
-    if (cursor) {
-      replacements.push(new Date(parseInt(cursor)));
-    }
-
-    const posts = await getConnection().query(
-      `
-    select p.* 
-    from post p
-    ${cursor ? `where p."createdAt" < $2` : ''}
-    order by p."createdAt" DESC
-    limit $1
-    `,
-      replacements
-    );
-
-    // USING QUERY BUILDER
-    // const qb = getConnection()
-    //   .getRepository(Post)
-    //   .createQueryBuilder('p')
-    //   .select('value')
-    //   .from(Upvote, 'voteStatus')
-    //   .where('"userId" = :id', {
-    //     id: req.session.userId,
-    //   })
-    //   .andWhere('"postId" = p.id')
-    //   .innerJoinAndSelect('p.originalPoster', 'op')
-    //   .orderBy({ 'p.createdAt': 'DESC' })
-    //   .take(realLimitPlusOne);
+    // const replacements: any[] = [realLimitPlusOne];
     //
     // if (cursor) {
-    //   qb.where('p.createdAt < :cursor', {
-    //     cursor: new Date(parseInt(cursor)),
-    //   });
+    //   replacements.push(new Date(parseInt(cursor)));
     // }
     //
-    // const posts = await qb.getMany();
+    // const posts = await getConnection().query(
+    //   `
+    // select p.*
+    // from post p
+    // ${cursor ? `where p."createdAt" < $2` : ''}
+    // order by p."createdAt" DESC
+    // limit $1
+    // `,
+    //   replacements
+    // );
+
+    // USING QUERY BUILDER
+    const qb = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder('p')
+      .orderBy({ 'p.createdAt': 'DESC' })
+      .take(realLimitPlusOne);
+
+    if (cursor) {
+      qb.where('p.createdAt < :cursor', {
+        cursor: new Date(parseInt(cursor)),
+      });
+    }
+
+    const posts = await qb.getMany();
 
     return {
       posts: posts.slice(0, realLimit),
