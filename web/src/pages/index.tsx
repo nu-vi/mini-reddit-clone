@@ -12,12 +12,7 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { createUrqlClient } from '../utils/createUrqlClient';
-import {
-  Post,
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-} from '../generated/graphql';
+import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { PostVoteSection } from '../components/PostVoteSection';
 import { DeleteModal } from '../components/DeleteModal';
@@ -28,13 +23,10 @@ const Index = () => {
     limit: 15,
     cursor: null as null | string,
   });
-  // @ts-ignore
-  const [postToDelete, setPostToDelete] = useState<Post, null>(null);
+  const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
-  const [{ data: meData }] = useMeQuery();
-  const [, deletePost] = useDeletePostMutation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -74,10 +66,16 @@ const Index = () => {
                   Posted by {p.originalPoster.username}
                 </Text>
               </Box>
-              {AdminButtons(p, meData, () => {
-                setPostToDelete(p);
-                onOpen();
-              })}
+              <Box ml="auto">
+                <AdminButtons
+                  postId={p.id}
+                  opId={p.originalPoster.id}
+                  onDeleteClick={() => {
+                    setPostToDelete(p);
+                    onOpen();
+                  }}
+                />
+              </Box>
             </Flex>
             <Text fontSize="xl" mt={3}>
               {p.textSnippet + '...'}
@@ -150,12 +148,11 @@ const Index = () => {
 
   return (
     <Layout>
-      {DeleteModal(postToDelete, isOpen, onClose, async () => {
-        await deletePost({
-          id: postToDelete.id,
-        });
-        onClose();
-      })}
+      <DeleteModal
+        postToDelete={postToDelete!}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
       {renderPosts()}
       {renderLoadingPosts()}
     </Layout>

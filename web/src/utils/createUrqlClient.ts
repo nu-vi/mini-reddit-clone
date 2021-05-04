@@ -4,7 +4,7 @@ import {
   fetchExchange,
   stringifyVariables,
 } from 'urql';
-import { cacheExchange, Resolver, Cache } from '@urql/exchange-graphcache';
+import { Cache, cacheExchange, Resolver } from '@urql/exchange-graphcache';
 import Router from 'next/router';
 import { pipe, tap } from 'wonka';
 import {

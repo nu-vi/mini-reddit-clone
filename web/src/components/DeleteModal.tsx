@@ -9,14 +9,21 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/react';
-import { Post } from '../generated/graphql';
+import { Post, useDeletePostMutation } from '../generated/graphql';
 
-export const DeleteModal = (
-  postToDelete: Post,
-  isOpen: boolean,
-  onClose: () => void,
-  onDeleteClick: () => void
-) => {
+interface DeleteModalProps {
+  postToDelete: Post;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const DeleteModal: React.FC<DeleteModalProps> = ({
+  postToDelete,
+  isOpen,
+  onClose,
+}) => {
+  const [, deletePost] = useDeletePostMutation();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -31,7 +38,15 @@ export const DeleteModal = (
           <Button mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme="red" onClick={onDeleteClick}>
+          <Button
+            colorScheme="red"
+            onClick={async () => {
+              await deletePost({
+                id: postToDelete.id,
+              });
+              onClose();
+            }}
+          >
             Delete
           </Button>
         </ModalFooter>
