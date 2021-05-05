@@ -23,9 +23,9 @@ import { createUpvoteLoader } from './utils/dataLoaders/createUpvoteLoader';
 const main = async () => {
   const connection = await createConnection({
     type: 'postgres',
-    url: process.env.REDIS_URL,
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: !__prod__,
+    //synchronize: !__prod__,
     migrations: [path.join(__dirname, './migrations/*')],
     entities: [Post, User, Upvote],
   });
@@ -37,7 +37,7 @@ const main = async () => {
   const app = express();
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
-  app.set('proxy', 1);
+  app.set('trust proxy', 1);
   app.use(
     cors({
       origin: process.env.CORS_ORIGIN,
