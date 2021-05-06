@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { Post, useDeletePostMutation } from '../generated/graphql';
 import { useRouter } from 'next/router';
+import { userIsAuth } from '../utils/userIsAuth';
 
 interface DeleteModalProps {
   postToDelete: Post;
@@ -27,6 +28,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
 }) => {
   const [, deletePost] = useDeletePostMutation();
   const router = useRouter();
+  userIsAuth();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

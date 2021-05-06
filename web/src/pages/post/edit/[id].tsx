@@ -9,9 +9,11 @@ import { useRouter } from 'next/router';
 import { useGetPostFromUrl } from '../../../utils/useGetPostFromUrl';
 import { useUpdatePostMutation } from '../../../generated/graphql';
 import { useGetIntId } from '../../../utils/useGetIntId';
+import { userIsAuth } from '../../../utils/userIsAuth';
 
 export const EditPost = ({}) => {
   const router = useRouter();
+  userIsAuth();
   const intId = useGetIntId();
   const [{ data, fetching }] = useGetPostFromUrl();
   const [, updatePost] = useUpdatePostMutation();
@@ -46,7 +48,7 @@ export const EditPost = ({}) => {
             initialValues={{ title: data.post.title, text: data.post.text }}
             onSubmit={async (values) => {
               await updatePost({ id: intId, ...values });
-              await router.back()  ;
+              await router.back();
             }}
           >
             {({ isSubmitting }) => (
