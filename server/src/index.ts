@@ -21,6 +21,7 @@ import { createUserLoader } from './utils/dataLoaders/createUserLoader';
 import { createUpvoteLoader } from './utils/dataLoaders/createUpvoteLoader';
 
 const main = async () => {
+  // @ts-ignore
   const connection = await createConnection({
     type: 'postgres',
     url: process.env.DATABASE_URL,
@@ -30,7 +31,7 @@ const main = async () => {
     entities: [Post, User, Upvote],
   });
 
-  await connection.runMigrations();
+  //await connection.runMigrations();
 
   //await Post.delete({});
 

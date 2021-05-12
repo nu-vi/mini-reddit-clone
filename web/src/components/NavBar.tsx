@@ -14,16 +14,18 @@ import {
 import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 import { HamburgerIcon, Icon } from '@chakra-ui/icons';
-import { CgLogOut, CgProfile, CgAdd, CgLogIn, CgUserAdd } from 'react-icons/cg';
+import { CgAdd, CgLogIn, CgLogOut, CgProfile, CgUserAdd } from 'react-icons/cg';
+import { useApolloClient } from '@apollo/client';
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-  const [{ data, fetching }] = useMeQuery();
-  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
+  const [logout, { loading: logoutFetching }] = useLogoutMutation();
+  const apolloClient = useApolloClient();
+  const { data, loading } = useMeQuery();
   let body = null;
 
-  if (fetching) {
+  if (loading) {
     //data is loading
   } else if (!data?.me) {
     //user not logged in
@@ -86,8 +88,9 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
             </Button>
           </NextLink>
           <Button
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await logout();
+              await apolloClient.resetStore();
             }}
             variant="link"
             color="black"
@@ -119,8 +122,9 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
                 </MenuItem>
               </NextLink>
               <MenuItem
-                onClick={() => {
-                  logout();
+                onClick={async () => {
+                  await logout();
+                  await apolloClient.resetStore();
                 }}
                 fontSize="lg"
                 icon={<Icon as={CgLogOut} boxSize={6} />}
@@ -137,12 +141,12 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   return (
     <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={3} align="center">
       {/*<Flex align="center" m="auto" maxW={1000} flex={1}>*/}
-        <NextLink href="/">
-          <Link as={Heading} mr="auto">
-            LiReddit
-          </Link>
-        </NextLink>
-        <Box ml="auto">{body}</Box>
+      <NextLink href="/">
+        <Link as={Heading} mr="auto">
+          LiReddit
+        </Link>
+      </NextLink>
+      <Box ml="auto">{body}</Box>
       {/*</Flex>*/}
     </Flex>
   );

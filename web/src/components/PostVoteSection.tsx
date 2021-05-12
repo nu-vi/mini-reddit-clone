@@ -1,19 +1,65 @@
-import React, { useState } from 'react';
-import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
-import { Flex, IconButton, Spinner, Text } from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import React, {useState} from 'react';
+import {PostSnippetFragment, useVoteMutation, VoteMutation,} from '../generated/graphql';
+import {Flex, IconButton, Spinner, Text} from '@chakra-ui/react';
+import {ChevronDownIcon, ChevronUpIcon} from '@chakra-ui/icons';
+import gql from 'graphql-tag';
+import {ApolloCache} from '@apollo/client';
 
 interface PostVoteSectionProps {
   //post: PostsQuery["posts"]["posts"][0]
   post: PostSnippetFragment;
 }
 
+const updateAfterVote = (
+  value: number,
+  postId: number,
+  cache: ApolloCache<VoteMutation>
+) => {
+  const data = cache.readFragment<{
+    id: number;
+    voteStatus: number | null;
+  }>({
+    id: 'Post:' + postId,
+    fragment: gql`
+      fragment _ on Post {
+        id
+        voteStatus
+      }
+    `,
+  });
+
+  if (data) {
+    if (data.voteStatus === value) {
+      cache.writeFragment({
+        id: 'Post:' + postId,
+        fragment: gql`
+          fragment __ on Post {
+            voteStatus
+          }
+        `,
+        data: { id: postId, voteStatus: null },
+      });
+      return;
+    }
+
+    cache.writeFragment({
+      id: 'Post:' + postId,
+      fragment: gql`
+        fragment __ on Post {
+          voteStatus
+        }
+      `,
+      data: { id: postId, voteStatus: value },
+    });
+  }
+};
+
 export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
   const [loadingState, setLoadingState] = useState<
     'upvote-loading' | 'downvote-loading' | 'not-loading'
   >('not-loading');
   const [currentPoints, setCurrentPoints] = useState<number>(post.points);
-  const [, vote] = useVoteMutation();
+  const [vote] = useVoteMutation();
 
   return (
     <Flex
@@ -26,8 +72,11 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
         onClick={() => {
           setLoadingState('upvote-loading');
           vote({
-            postId: post.id,
-            value: 1,
+            variables: {
+              postId: post.id,
+              value: 1,
+            },
+            update: (cache) => updateAfterVote(1, post.id, cache),
           }).then(({ data }) => {
             if (data) {
               setCurrentPoints(data.vote.points);
@@ -46,8 +95,11 @@ export const PostVoteSection: React.FC<PostVoteSectionProps> = ({ post }) => {
         onClick={() => {
           setLoadingState('downvote-loading');
           vote({
-            postId: post.id,
-            value: -1,
+            variables: {
+              postId: post.id,
+              value: -1,
+            },
+            update: (cache) => updateAfterVote(-1, post.id, cache),
           }).then(({ data }) => {
             if (data) {
               setCurrentPoints(data.vote.points);

@@ -2,31 +2,37 @@ import React from 'react';
 import { Form, Formik } from 'formik';
 import { InputField } from '../components/InputFieldC';
 import { Box, Button, useBreakpointValue } from '@chakra-ui/react';
-import { withUrqlClient } from 'next-urql';
 import { useRouter } from 'next/router';
-import { createUrqlClient } from '../utils/createUrqlClient';
 import { useCreatePostMutation } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { userIsAuth } from '../utils/userIsAuth';
 import { toErrorMap } from '../utils/toErrorMap';
+import { withApollo } from '../utils/withApollo';
 
 const CreatePost: React.FC<{}> = ({}) => {
-
   const router = useRouter();
   userIsAuth();
-  const [, createPost] = useCreatePostMutation();
-  const variant : "small" | "regular" | undefined = useBreakpointValue({ base: 'small', md: 'regular' });
+  const [createPost] = useCreatePostMutation();
+  const variant: 'small' | 'regular' | undefined = useBreakpointValue({
+    base: 'small',
+    md: 'regular',
+  });
 
   return (
     <Layout variant={variant}>
       <Formik
         initialValues={{ title: '', text: '' }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await createPost({ input: values });
+          const response = await createPost({
+            variables: { input: values },
+            update: (cache) => {
+              cache.evict({ fieldName: 'posts' });
+            },
+          });
           if (response.data?.createPost.errors) {
             setErrors(toErrorMap(response.data.createPost.errors));
           } else if (response.data?.createPost.post) {
-            if (!response.error) {
+            if (!response.errors) {
               await router.push('/');
             }
           }
@@ -58,4 +64,4 @@ const CreatePost: React.FC<{}> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(CreatePost);
+export default withApollo({ ssr: false })(CreatePost);

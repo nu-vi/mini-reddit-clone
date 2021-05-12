@@ -3,17 +3,20 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Form, Formik } from 'formik';
 import { Box, Button, Flex, Link } from '@chakra-ui/react';
-import { withUrqlClient } from 'next-urql';
 import NextLink from 'next/link';
 import { toErrorMap } from '../../utils/toErrorMap';
 import { InputField } from '../../components/InputFieldC';
 import { Wrapper } from '../../components/Wrapper';
-import { useResetPasswordMutation } from '../../generated/graphql';
-import { createUrqlClient } from '../../utils/createUrqlClient';
+import {
+  MeDocument,
+  MeQuery,
+  useResetPasswordMutation,
+} from '../../generated/graphql';
+import { withApollo } from '../../utils/withApollo';
 
 const ResetPassword: NextPage = () => {
   const router = useRouter();
-  const [, resetPassword] = useResetPasswordMutation();
+  const [resetPassword] = useResetPasswordMutation();
   const [tokenError, setTokenError] = useState('');
 
   return (
@@ -22,9 +25,22 @@ const ResetPassword: NextPage = () => {
         initialValues={{ newPassword: '' }}
         onSubmit={async (values, { setErrors }) => {
           const response = await resetPassword({
-            newPassword: values.newPassword,
-            token:
-              typeof router.query.token === 'string' ? router.query.token : '',
+            variables: {
+              newPassword: values.newPassword,
+              token:
+                typeof router.query.token === 'string'
+                  ? router.query.token
+                  : '',
+            },
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: 'Query',
+                  me: data?.resetPassword.user,
+                },
+              });
+            },
           });
           if (response.data?.resetPassword.errors) {
             const errorMap = toErrorMap(response.data.resetPassword.errors);
@@ -71,4 +87,4 @@ const ResetPassword: NextPage = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(ResetPassword);
+export default withApollo({ ssr: false })(ResetPassword);

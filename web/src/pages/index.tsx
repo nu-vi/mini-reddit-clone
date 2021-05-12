@@ -1,5 +1,4 @@
 import { DetailedHTMLProps, useEffect, useState } from 'react';
-import { withUrqlClient } from 'next-urql';
 import {
   Box,
   Flex,
@@ -11,21 +10,21 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { createUrqlClient } from '../utils/createUrqlClient';
 import { Post, usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { PostVoteSection } from '../components/PostVoteSection';
 import { DeleteModal } from '../components/DeleteModal';
 import { AdminButtons } from '../components/AdminButtons';
+import { withApollo } from '../utils/withApollo';
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 15,
-    cursor: null as null | string,
-  });
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
-  const [{ data, fetching, stale, error }] = usePostsQuery({
-    variables,
+  const { data, loading, error, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true,
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -41,9 +40,11 @@ const Index = () => {
       e.scrollHeight - e.scrollTop <= e.clientHeight * 1.2;
     if (userScrolled80Percent) {
       if (data && data.posts.hasMore) {
-        setVariables({
-          limit: variables.limit,
-          cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+        fetchMore({
+          variables: {
+            limit: variables?.limit,
+            cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+          },
         });
       }
     }
@@ -86,18 +87,16 @@ const Index = () => {
     );
 
   const renderPosts = () => {
-    if (fetching && !data) {
+    if (loading && !data) {
       return <div>loading...</div>;
     }
-    if (!fetching && !data) {
+    if (!loading && !data) {
       return (
         <>
           <Heading>Your posts query failed for some reason.</Heading>
           <br />
           <Heading>Please try again later.</Heading>
-          <Text mt={8}>
-            {error?.message}
-          </Text>
+          <Text mt={8}>{error?.message}</Text>
         </>
       );
     } else {
@@ -126,7 +125,7 @@ const Index = () => {
               justifyContent="center"
             >
               <Box>
-                {stale ? (
+                {loading ? (
                   <Spinner
                     thickness="6px"
                     emptyColor="gray.200"
@@ -162,4 +161,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);

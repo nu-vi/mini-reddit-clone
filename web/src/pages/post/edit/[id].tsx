@@ -1,6 +1,4 @@
 import React from 'react';
-import { createUrqlClient } from '../../../utils/createUrqlClient';
-import { withUrqlClient } from 'next-urql';
 import { Layout } from '../../../components/Layout';
 import { Form, Formik } from 'formik';
 import { InputField } from '../../../components/InputFieldC';
@@ -10,13 +8,14 @@ import { useGetPostFromUrl } from '../../../utils/useGetPostFromUrl';
 import { useUpdatePostMutation } from '../../../generated/graphql';
 import { useGetIntId } from '../../../utils/useGetIntId';
 import { userIsAuth } from '../../../utils/userIsAuth';
+import { withApollo } from '../../../utils/withApollo';
 
 export const EditPost = ({}) => {
   const router = useRouter();
-  userIsAuth();
   const intId = useGetIntId();
-  const [{ data, fetching }] = useGetPostFromUrl();
-  const [, updatePost] = useUpdatePostMutation();
+  const { data, loading } = useGetPostFromUrl();
+  const [updatePost] = useUpdatePostMutation();
+  userIsAuth();
   const variant: 'small' | 'regular' | undefined = useBreakpointValue({
     base: 'small',
     md: 'regular',
@@ -24,7 +23,7 @@ export const EditPost = ({}) => {
 
   const renderBody = () => {
     if (!data) {
-      if (fetching) {
+      if (loading) {
         return <div>loading...</div>;
       } else {
         return (
@@ -47,7 +46,8 @@ export const EditPost = ({}) => {
           <Formik
             initialValues={{ title: data.post.title, text: data.post.text }}
             onSubmit={async (values) => {
-              await updatePost({ id: intId, ...values });
+              await updatePost({ variables: { id: intId, ...values } });
+              console.log('router:', router.back());
               await router.back();
             }}
           >
@@ -81,4 +81,4 @@ export const EditPost = ({}) => {
   return <Layout variant={variant}>{renderBody()}</Layout>;
 };
 
-export default withUrqlClient(createUrqlClient)(EditPost);
+export default withApollo({ ssr: false })(EditPost);

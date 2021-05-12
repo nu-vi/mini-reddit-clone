@@ -15,7 +15,7 @@ export const AdminButtons: React.FC<AdminButtonProps> = ({
   opId,
   onDeleteClick,
 }) => {
-  const [{ data: meData }] = useMeQuery();
+  const { data: meData } = useMeQuery();
 
   if (opId === meData?.me?.id) {
     return (

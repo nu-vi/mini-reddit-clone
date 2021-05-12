@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { withUrqlClient } from 'next-urql';
 import { Box, Flex, Heading, Text, useDisclosure } from '@chakra-ui/react';
-import { createUrqlClient } from '../../utils/createUrqlClient';
 import { Layout } from '../../components/Layout';
 import { useGetPostFromUrl } from '../../utils/useGetPostFromUrl';
 import { AdminButtons } from '../../components/AdminButtons';
 import { DeleteModal } from '../../components/DeleteModal';
+import { withApollo } from '../../utils/withApollo';
 
 export const Post = ({}) => {
-  const [{ data, fetching }] = useGetPostFromUrl();
+  const { data, loading } = useGetPostFromUrl();
   const [postToDelete, setPostToDelete] = useState<any>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const renderBody = () => {
     if (!data) {
-      if (fetching) {
+      if (loading) {
         return <div>loading...</div>;
       } else {
         return (
@@ -60,11 +59,10 @@ export const Post = ({}) => {
           </>
         );
       }
-      
     }
   };
 
   return <Layout>{renderBody()}</Layout>;
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Post);
+export default withApollo({ ssr: true })(Post);
